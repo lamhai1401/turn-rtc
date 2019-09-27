@@ -1,0 +1,13 @@
+version: '3.3'
+
+services:
+
+  turn:
+    build: .
+    # command:  bash -c "ls -a |"
+    container_name: turn-server
+    volumes:
+      - .:/turn-server
+    ports: 
+      - "3478:3478"
+      - "49160-49200:49160-49200/udp"

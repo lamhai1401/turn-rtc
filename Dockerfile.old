@@ -1,0 +1,24 @@
+# FROM ubuntu
+FROM golang
+# FROM node
+
+# set startup parameters
+# SUTN/TURN PORTS
+EXPOSE 3478 3479 3478/udp 3479/udp 80 80/udp
+EXPOSE 5349 5350 5349/udp 5350/udp 443 443/udp
+# CLI
+EXPOSE 5766
+# Relay Ports
+EXPOSE 49152-65535 49152-65535/udp
+
+ENV USERS='username=password'
+ENV REALM=my-server.com
+ENV UDP_PORT=3478
+
+RUN go get -u github.com/pion/logging
+RUN go get -u github.com/pion/turn
+
+COPY . /usr/local/src/turn-server
+WORKDIR /usr/local/src/turn-server
+
+CMD [ "go", "run", "main.go" ]
