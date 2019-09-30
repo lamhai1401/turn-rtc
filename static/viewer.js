@@ -4,6 +4,12 @@ var offer_area = document.getElementById('offer'),
     iceGatheringLog = document.getElementById('ice-gathering-state'),
     signalingLog = document.getElementById('signaling-state');
 
+var id = ((10 ** 9) * Math.random() | 0).toString(16)
+
+let signalingChannel = io.connect("https://beo-wssignal.herokuapp.com/", {
+  query: { id: 2 }
+})
+
 var config = {
     sdpSemantics: 'unified-plan',
     iceServers: [
@@ -43,6 +49,36 @@ pc.addEventListener('track', function(evt) {
     else
         document.getElementById('audio').srcObject = evt.streams[0];
 });
+
+// signalingChannel.onmessage = receivedString => {
+//     const message = JSON.parse(receivedString);
+//     if (message.ice) {
+//       // A typical value of ice here might look something like this:
+//       //
+//       // {candidate: "candidate:0 1 UDP 2122154243 192.168.1.9 53421 typ host", sdpMid: "0", ...}
+//       //
+//       // Pass the whole thing to addIceCandidate:
+  
+//       pc.addIceCandidate(message.ice).catch(e => {
+//         console.log("Failure during addIceCandidate(): " + e.name);
+//       });
+//     } else {
+//         console.log("Receive ICE candidate done !!!")
+//         signalingChannel.disconnect();
+//     }
+// }
+
+signalingChannel.on("message", (id, data) => {
+    console.log("Sender", id)
+    if (data) {
+        pc.addIceCandidate(data).catch(e => {
+            console.log("Failure during addIceCandidate(): " + e.name);
+        });
+    } else {
+        console.log("Receive ICE candidate done !!!")
+        // signalingChannel.disconnect();
+    }
+})
 
 async function join() {
     let {offer} = await fetch("/get_broadcast", {

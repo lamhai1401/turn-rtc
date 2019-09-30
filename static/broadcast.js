@@ -4,6 +4,12 @@ var offer_area = document.getElementById('offer'),
     iceGatheringLog = document.getElementById('ice-gathering-state'),
     signalingLog = document.getElementById('signaling-state');
 
+var id = ((10 ** 9) * Math.random() | 0).toString(16)
+
+let signalingChannel = io.connect("https://beo-wssignal.herokuapp.com/", {
+  query: { id: 1 }
+})
+
 var config = {
     sdpSemantics: 'unified-plan',
     iceServers: [
@@ -36,6 +42,26 @@ pc.addEventListener('signalingstatechange', function () {
 }, false);
 signalingLog.textContent = pc.signalingState;
 
+pc.onicecandidate = function(event) {
+    console.log("Send ICE candidate !!!")
+    if (event.candidate) {
+        console.log("Send ICE candidate !!!")
+        signalingChannel.send(
+            2,
+            {
+                candidate: event.candidate
+            }
+        ); // "ice" is arbitrary
+    } else {
+        console.log("Send ICE candidate done !!!")
+        signalingChannel.send(
+            2,
+            null
+        );
+        // signalingChannel.disconnect();
+    }
+}
+
 let displayVideo = video => {
     var el = document.createElement('video')
     el.srcObject = video
@@ -51,7 +77,7 @@ let displayVideo = video => {
 navigator.mediaDevices.getUserMedia({video: true, audio: true})
 .then(stream => {
     pc.addStream(displayVideo(stream))
-    return pc.createOffer({offerToReceiveVideo: true, offerToReceiveAudio: true})
+    return pc.createOffer({})
 })
 .then(offer => pc.setLocalDescription(offer))
 .then( async () => {
