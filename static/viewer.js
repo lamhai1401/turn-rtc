@@ -1,14 +1,16 @@
-var offer_area = document.getElementById('offer'),
-    answer_area = document.getElementById('answer'),
-    iceConnectionLog = document.getElementById('ice-connection-state'),
+var iceConnectionLog = document.getElementById('ice-connection-state'),
     iceGatheringLog = document.getElementById('ice-gathering-state'),
+    id_broadcast = document.getElementById('id-broadcast'),
+    id_viewer = document.getElementById('id-viewer'),
     signalingLog = document.getElementById('signaling-state');
 
-var id = ((10 ** 9) * Math.random() | 0).toString(16)
+var id = ((0x10000) * Math.random() | 0).toString(16)
 
 let signalingChannel = io.connect("https://beo-wssignal.herokuapp.com/", {
-  query: { id: 2 }
+    query: { id: id }
 })
+
+id_viewer.textContent += id
 
 var config = {
     sdpSemantics: 'unified-plan',
@@ -42,78 +44,58 @@ pc.addEventListener('signalingstatechange', function () {
 }, false);
 signalingLog.textContent = pc.signalingState;
 
-pc.addEventListener('track', function(evt) {
-    console.log(evt)
-    if (evt.track.kind == 'video')
-        document.getElementById('video').srcObject = evt.streams[0];
-    else
-        document.getElementById('audio').srcObject = evt.streams[0];
-});
+let inboundStream = null;
 
-// signalingChannel.onmessage = receivedString => {
-//     const message = JSON.parse(receivedString);
-//     if (message.ice) {
-//       // A typical value of ice here might look something like this:
-//       //
-//       // {candidate: "candidate:0 1 UDP 2122154243 192.168.1.9 53421 typ host", sdpMid: "0", ...}
-//       //
-//       // Pass the whole thing to addIceCandidate:
-  
-//       pc.addIceCandidate(message.ice).catch(e => {
-//         console.log("Failure during addIceCandidate(): " + e.name);
-//       });
-//     } else {
-//         console.log("Receive ICE candidate done !!!")
-//         signalingChannel.disconnect();
-//     }
-// }
-
-signalingChannel.on("message", (id, data) => {
-    console.log("Sender", id)
-    if (data) {
-        pc.addIceCandidate(data).catch(e => {
-            console.log("Failure during addIceCandidate(): " + e.name);
-        });
-    } else {
-        console.log("Receive ICE candidate done !!!")
-        // signalingChannel.disconnect();
+pc.ontrack = ev => {
+  if (ev.streams && ev.streams[0]) {
+    document.getElementById('video').srcObject = ev.streams[0];
+  } else {
+    if (!inboundStream) {
+      inboundStream = new MediaStream();
+      document.getElementById('video').srcObject = inboundStream;
     }
-})
+    inboundStream.addTrack(ev.track);
+  }
+}
+
+pc.onicecandidate = function (event) {
+    if (event.candidate) {
+        console.log("Send ICE candidate: ", event.candidate)
+        signalingChannel.send(id_broadcast.value, { candidate: event.candidate }); // "ice" is arbitrary
+    } else {
+        console.log("Send ICE candidate done !!!")
+    }
+}
 
 async function join() {
-    let {offer} = await fetch("/get_broadcast", {
-        method: "GET",
-        headers: {
-            'Content-Type': 'application/json'
+    signalingChannel.send(id_broadcast.value, { viewer: true })
+
+    signalingChannel.on(
+        "message",
+        async (channel, data) => {
+            try {
+                if (data.viewer) {
+
+                } else if (data.sdp) {
+                    await pc.setRemoteDescription(data).then(() => console.log("Set remote done at: ", Date.now()))
+    
+                    let answer = await pc.createAnswer()
+    
+                    await pc.setLocalDescription(answer).then(() => console.log("Set local done at: ", Date.now()))
+    
+                    signalingChannel.send(id_broadcast.value, answer)
+
+                    document.getElementById('offer-sdp').textContent = data.sdp
+                    document.getElementById('answer-sdp').textContent = answer.sdp
+                } else if (data.candidate) {
+                    console.log("Receive ICE candidate: ", data.candidate)
+                    await pc.addIceCandidate(data.candidate).then(() => console.log("Add success")).catch(err => console.error("ADD failed: ", err))
+                } else {
+                    console.error(data)
+                }
+            } catch (error) {
+                alert(JSON.stringify(error))
+            }
         }
-    }).then(e => e.json())
-
-    await pc.setRemoteDescription(offer).catch(e => alert(e))
-    let answer = await pc.createAnswer().catch(e => alert(e))
-    await pc.setLocalDescription(answer).catch(e => alert(e))
-    answer_area.value = btoa(JSON.stringify(pc.localDescription))
-
-    document.getElementById('offer-sdp').textContent = offer.sdp;
-    document.getElementById('answer-sdp').textContent = pc.localDescription.sdp;
-
-    let response = await fetch("/viewer", {
-        method: "POST",
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            sdp: pc.localDescription.sdp,
-            type: pc.localDescription.type
-        }) 
-    }).then(e => e.json())
-
-    console.log("viewer response", response)
-
-    pc.addEventListener('track', function(evt) {
-        console.log(evt)
-        if (evt.track.kind == 'video')
-            document.getElementById('video').srcObject = evt.streams[0];
-        else
-            document.getElementById('audio').srcObject = evt.streams[0];
-    });
+    )
 }

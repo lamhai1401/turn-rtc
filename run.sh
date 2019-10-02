@@ -15,3 +15,7 @@ sudo docker tag docker-rtc:1.0 gcr.io/livestreaming-241004/docker-rtc:1.0
 gcloud auth print-access-token | sudo docker login -u oauth2accesstoken --password-stdin https://gcr.io/livestreaming-241004
 
 sudo docker push gcr.io/livestreaming-241004/docker-rtc:1.0
+
+gcloud builds submit --tag gcr.io/livestreaming-241004/docker-rtc:1.0
+
+gcloud beta run deploy rtc-test --image gcr.io/livestreaming-241004/docker-rtc:1.0 --platform managed --region us-central1 --allow-unauthenticated
