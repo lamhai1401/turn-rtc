@@ -67,8 +67,8 @@ func StartHTTPServer() {
 			port = "8088"
 		}
 
-		// err := http.ListenAndServeTLS(fmt.Sprintf(":%s", port), "server.crt", "server.key", r)
-		err := http.ListenAndServe(fmt.Sprintf(":%s", port), r)
+		err := http.ListenAndServeTLS(fmt.Sprintf(":%s", port), "server.crt", "server.key", r)
+		// err := http.ListenAndServe(fmt.Sprintf(":%s", port), r)
 
 		if err != nil {
 			fmt.Print(err)

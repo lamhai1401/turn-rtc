@@ -29,8 +29,7 @@ function checkTURNServer(turnConfig, timeout){
 }
   
 checkTURNServer({
-    // url: 'turn:35.240.163.22',
-    url : 'turn:35.247.173.254',
+    urls: "turn:35.247.173.254",
     username: 'username',
     credential: 'password'
 }).then(function(bool){

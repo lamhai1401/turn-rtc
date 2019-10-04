@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js" crossorigin="anonymous"></script>
+    <title>Document</title>
+</head>
+<body>
+    <input type="text" name="" id="call-id">
+    <p>
+        <h1>Your ID</h1>: <span id="your-id"></span>
+    </p>
+    <h2>State</h2>
+    <p>
+        ICE gathering state: <span id="ice-gathering-state"></span>
+    </p>
+    <p>
+        ICE connection state: <span id="ice-connection-state"></span>
+    </p>
+    <p>
+        Signaling state: <span id="signaling-state"></span>
+    </p>
+    <br>
+    <button type="submit" onclick="start()"> start</button>
+    <br>
+    Video<br />
+    <video id="remoteVideo" autoplay="true" playsinline="true"></video>
+    <video id="localVideo" autoplay="true" playsinline="true"></video>
+    <h3>Offer</h3>
+    <pre id="offer-sdp"></pre>
+
+    <h3>Answer</h3>
+    <pre id="answer-sdp"></pre>
+    <script src="/peer.js"></script>
+    <script src="/test-turn.js"></script>
+</body>
+</html>
