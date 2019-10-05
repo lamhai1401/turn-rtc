@@ -25,13 +25,13 @@ function checkTURNServer(turnConfig, timeout){
       promiseResolved = true;
       resolve(true);
     };
-  });   
+  });
 }
   
 checkTURNServer({
-    urls: "turn:35.247.173.254",
-    username: 'username',
-    credential: 'password'
+  urls: "turn:35.247.173.254",
+  username: 'username',
+  credential: 'password'
 }).then(function(bool){
     console.log('is my TURN server active? ', bool? 'yes':'no');
 }).catch(console.error.bind(console));

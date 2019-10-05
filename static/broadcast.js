@@ -30,30 +30,30 @@ var config = {
 };
 
 var pc = new RTCPeerConnection(config)
-var transceiver = pc.addTransceiver("video")
+// var transceiver = pc.addTransceiver("video")
 
-RTCRtpReceiver.getCapabilities("video")
-const capabilities = RTCRtpSender.getCapabilities('video')
-capabilities.codecs = [
-    {
-        clockRate: 90000,
-        mimeType: "video/rtx"
-    },
-    {
-        clockRate: 90000,
-        mimeType: "video/VP8"
-    },
-    {
-        clockRate: 90000,
-        mimeType: "video/red"
-    },
-    {
-        clockRate: 90000,
-        mimeType: "video/ulpfec"
-    }
-]
-transceiver.setCodecPreferences(capabilities.codecs)
-pc.addTransceiver("video", transceiver)
+// RTCRtpReceiver.getCapabilities("video")
+// const capabilities = RTCRtpSender.getCapabilities('video')
+// capabilities.codecs = [
+//     {
+//         clockRate: 90000,
+//         mimeType: "video/rtx"
+//     },
+//     {
+//         clockRate: 90000,
+//         mimeType: "video/VP8"
+//     },
+//     {
+//         clockRate: 90000,
+//         mimeType: "video/red"
+//     },
+//     {
+//         clockRate: 90000,
+//         mimeType: "video/ulpfec"
+//     }
+// ]
+// transceiver.setCodecPreferences(capabilities.codecs)
+// pc.addTransceiver("video", transceiver)
 
 // register some listeners to help debugging
 pc.addEventListener('icegatheringstatechange', function () {
